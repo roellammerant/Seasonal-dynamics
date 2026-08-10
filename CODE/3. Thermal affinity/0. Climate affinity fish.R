@@ -4,7 +4,9 @@
 #                                                          #
 ##%######################################################%##
 ## Note:
-## This file shows how to extract thermal affinity for fishes but doesn´t run without extracting the occurrence data yourself
+## This file shows how to extract thermal affinity for fishes but doesnÂ´t run without extracting the occurrence data yourself
+### The GBIF occurence data can be found through the following DOI: https://doi.org/10.15468/dl.ynh4ya
+### The example names for datafiles below need to be addjusted to your own names
 
 install.packages("rgbif")
 library(rgbif)
@@ -13,15 +15,9 @@ library(stringr)
 library(dplyr)
 library(tidyverse)
 
-### UsageKey manual extraction Gbif
-library(readr)
-GbifListFish <- read_csv("output_data/GbifSpeciesListFish.csv") 
-GbifListFish<- GbifListFish[which(GbifListFish$matchType  =='EXACT'),]
-GbifListFish <- GbifListFish[c(2,18)]
-
-#### Occurences
+#### Extract Occurencesfrom GBIF
 occ_download(
-  pred_in("taxonKey", GbifListFish$usageKey),
+  pred_in("taxonKey", Own species list),
   pred("hasGeospatialIssue", FALSE),
   pred("hasCoordinate", TRUE),
   pred("occurrenceStatus", "PRESENT"),
@@ -30,9 +26,8 @@ occ_download(
   user="add username", pwd="add password" , email="add your mail"
 )
 
-Occurences <- occ_download_get('0008036-250920141307145') %>%
+Occurences <- occ_download_get() %>%
   occ_download_import()
-#write.csv(Occurences ,file='output_data/GBIFFish.csv') (To big of a file for GitHub)
 
 ##%######################################################%##
 #                                                          #
@@ -46,10 +41,10 @@ library(readr)
 library(ggplot2)
 library(spThin)
 
-### Basis of record - leave certain methods out?
-Occurences <- read.delim("C:/Users/Lammerant/Downloads/GbifFish/0008036-250920141307145.csv")
+### Basis of record
+Occurences <- read.delim()
 table(Occurences$basisOfRecord)
-# take out fossil species
+# We leave out fossil species
 Occurences <- Occurences[Occurences$basisOfRecord != c('FOSSIL_SPECIMEN'),]
 
 ### Clean coordinates
@@ -61,8 +56,7 @@ flags <- clean_coordinates(x = Occurences,
                                      "equal", "zeros", "gbif", "institutions","seas")) # most test are on by default
 
 
-### Subset coordinates that fall in the sea (110 075 occurences cleaned)
-
+### Subset coordinates that fall in the sea
 flags_Cleaned <- flags[flags$.zer != c('FALSE'),]
 flags_Cleaned <- flags_Cleaned[flags_Cleaned$.cap != c('FALSE'),]
 flags_Cleaned <- flags_Cleaned[flags_Cleaned$.cen != c('FALSE'),]
@@ -81,13 +75,11 @@ ggplot() +
   theme_bw()
 
 ### Spatial tinning of data for every species in the data set
-### repeat for each species
-#### Doesn´t work on really large occurance amounts 30k+
-#### So run on subsets of data and all the thinned subsets together to get the same result
- 
+### Repeat this for each species seperately
+#### The code can be really slow when you use large occurance datasets of 30k+
+#### So we ran the thinning on subsets of the extracted occurence data and all the thinned subsets were later merged together to get the same result
 
 Species <- as.data.frame(table(flags_Cleaned$species))
-
 ZeusFaber <- flags_Cleaned[flags_Cleaned$species == c('Zeus faber'),]
   
 thin(
@@ -104,11 +96,8 @@ thin(
 
 ### Import Thinned spatial datasets
 ### Link them to environmental data
-### Repeat this code for all 120 species and save as csv files
 library(readr)
 library(sp)
-XyrichtysNovacula <- read_csv("output_data/FishThinnedOccurences/AbudefdufSaxatilis_Thinned.csv")
-summary(XyrichtysNovacula)
 
 ###  Biooracle temperature and link to coordinates
 library(biooracler)
@@ -128,9 +117,9 @@ RecentLayer <- layers[layers$time == c('2010-01-01T00:00:00Z'),]
 
 # Here our working projection
 setProj<-"+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
-xy.dt<- XyrichtysNovacula[,2:3]
+xy.dt<- SpeciesCoords[,2:3]
 quanti.sp<- SpatialPointsDataFrame(coords = xy.dt, 
-                                   data = XyrichtysNovacula,
+                                   data = SpeciesX,
                                    proj4string = CRS(setProj))
 library(raster)
 TemperatureFrame <- cbind(RecentLayer$longitude,RecentLayer$latitude, RecentLayer$thetao_mean)
@@ -144,21 +133,11 @@ df<- quanti.sp@data
 summary(df$Temp)
 df <- na.omit(df)
 
-write.csv(df, file='output_data/FishThermalAffinity/ZeusFaber.csv')
-
-### Load all csv files with temp data into one dataframe
-library(data.table)  
-files <- list.files(path = "output_data/FishThermalAffinity",pattern = ".csv", full.names = TRUE)
-temp <- lapply(files, fread, sep=",")
-data <- rbindlist( temp )
-write.csv(data, file='output_data/FishThermalAffinity/OverallThermalAffinity.csv')
-
 ### Clean out Mediterannean data
+### Choose longitude sections of 5 degrees, subset the points outside the mediterannean 
+### Merge all subsets after so that we have a dataset with all occurences outside the mediterannean
 
-### Clean out Mediterannean data
-### Choose longitude sections of 5 degrees and clean out mediterannean latitude
-### Merge after
-
+#### Subset 1
 Subset_minusToZero <- OverallThermalAffinity[OverallThermalAffinity$decimalLongitude > -6 & OverallThermalAffinity$decimalLongitude < 0,]
 wm <- borders("world", colour = "gray50", fill = "gray50")
 ggplot() +
@@ -172,6 +151,7 @@ ggplot() +
 NoMed_minusToZeroA <- Subset_minusToZero[Subset_minusToZero$decimalLatitude < 30,]
 NoMed_minusToZeroB <- Subset_minusToZero[Subset_minusToZero$decimalLatitude > 40,]
 
+#### Subset 2
 Subset_ZeroToTwentyfive <- OverallThermalAffinity[OverallThermalAffinity$decimalLongitude > 0 & OverallThermalAffinity$decimalLongitude < 25,]
 wm <- borders("world", colour = "gray50", fill = "gray50")
 ggplot() +
@@ -185,6 +165,7 @@ ggplot() +
 NoMed_ZeroToTwentyfiveA <- Subset_ZeroToTwentyfive[Subset_ZeroToTwentyfive$decimalLatitude < 30,]
 NoMed_ZeroToTwentyfiveB <- Subset_ZeroToTwentyfive[Subset_ZeroToTwentyfive$decimalLatitude > 46,]
 
+#### Subset 3
 Subset_TwentyfiveToFourty <- OverallThermalAffinity[OverallThermalAffinity$decimalLongitude > 25 & OverallThermalAffinity$decimalLongitude < 40,]
 wm <- borders("world", colour = "gray50", fill = "gray50")
 ggplot() +
@@ -199,6 +180,7 @@ ggplot() +
 NoMed_TwentyfiveToFourtyA <- Subset_TwentyfiveToFourty[Subset_TwentyfiveToFourty$decimalLatitude < 31,]
 NoMed_TwentyfiveToFourtyB <- Subset_TwentyfiveToFourty[Subset_TwentyfiveToFourty$decimalLatitude > 41.5,]
 
+#### Subset 4
 Subset_NomedA <- OverallThermalAffinity[OverallThermalAffinity$decimalLongitude > -180 & OverallThermalAffinity$decimalLongitude < -6,]
 Subset_NomedB <- OverallThermalAffinity[OverallThermalAffinity$decimalLongitude > 40 & OverallThermalAffinity$decimalLongitude < 180,]
 
@@ -209,6 +191,7 @@ ThermalAffinityWithoutMed <- rbind(NoMed_TwentyfiveToFourtyA,
                                    NoMed_ZeroToTwentyfiveB, NoMed_minusToZeroA,
                                    NoMed_minusToZeroB,Subset_NomedB,Subset_NomedA)
 
+### Double check if all points are outside the mediteranean
 wm <- borders("world", colour = "gray50", fill = "gray50")
 ggplot() +
   coord_fixed() +
@@ -218,6 +201,8 @@ ggplot() +
              colour = "darkred",
              size = 0.5) +
   theme_bw()
+
+### Caluculate max and mean thermal affinity
 ThermalAffinityFishMax <- aggregate(ThermalAffinityWithoutMed$Temp, 
                                        list(ThermalAffinityWithoutMed$species), FUN=max)
 colnames(ThermalAffinityFishMax) <- c("Species","MaxThermal")
@@ -225,6 +210,7 @@ ThermalAffinityFishMean <- aggregate(ThermalAffinityWithoutMed$Temp,
                                         list(ThermalAffinityWithoutMed$species), FUN=mean)
 colnames(ThermalAffinityFishMean) <- c("Species","MeanThermal")
 
+### Create Thermal Affinity dataframe
 ThermalAffinityFish<- as.data.frame(cbind(ThermalAffinityFishMax$Species,ThermalAffinityFishMax$MaxThermal,
                                              ThermalAffinityFishMean$MeanThermal))
 colnames(ThermalAffinityFish) <- c("Species","MaxThermal","MeanThermal" )
