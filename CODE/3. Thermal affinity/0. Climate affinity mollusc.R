@@ -205,15 +205,15 @@ ggplot() +
 
 ### Caluculate max and mean thermal affinity
 ThermalAffinityMolluscMax <- aggregate(ThermalAffinityWithoutMed$Temp, 
-                      list(ThermalAffinityWithoutMed$species), FUN=max)
+                                       list(ThermalAffinityWithoutMed$species), FUN=max)
 colnames(ThermalAffinityMolluscMax) <- c("Species","MaxThermal")
 ThermalAffinityMolluscMean <- aggregate(ThermalAffinityWithoutMed$Temp, 
-                                       list(ThermalAffinityWithoutMed$species), FUN=mean)
+                                        list(ThermalAffinityWithoutMed$species), FUN=mean)
 colnames(ThermalAffinityMolluscMean) <- c("Species","MeanThermal")
 
 ### Create Thermal Affinity dataframe
 ThermalAffinityMollusc<- as.data.frame(cbind(ThermalAffinityMolluscMax$Species,ThermalAffinityMolluscMax$MaxThermal,
-                                   ThermalAffinityMolluscMean$MeanThermal))
+                                             ThermalAffinityMolluscMean$MeanThermal))
 colnames(ThermalAffinityMollusc) <- c("Species","MaxThermal","MeanThermal" )
 ThermalAffinityMollusc$MaxThermal <- as.numeric(as.character(ThermalAffinityMollusc$MaxThermal))
 ThermalAffinityMollusc$MeanThermal <- as.numeric(as.character(ThermalAffinityMollusc$MeanThermal))
