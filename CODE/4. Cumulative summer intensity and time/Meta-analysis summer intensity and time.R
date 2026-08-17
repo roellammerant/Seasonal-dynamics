@@ -136,12 +136,12 @@ CI_MolluscNAT$ci.ub <- as.numeric(as.character(CI_MolluscNAT$ci.ub))
 #                                                          #
 ##%######################################################%##
 
-summer_c_int <- read.csv("~/RecruitmentMediterannean/DATA/summer_c_int.csv")
+summer_c_int <- read.csv("output_data/summer_c_int.csv")
 
 #### Mollusc
 
 MolluscSummerIntensity <- merge(MolluscSpAbundance, summer_c_int, 
-                                by.x = "eventYear", by.y = "year")
+                                by.x = "eventYear", by.y = "Year")
 
 SummerIntensity_MolluscNAT <- MolluscSummerIntensity[which(MolluscSummerIntensity$Invasive  =='NAT'),]
 SummerIntensity_MolluscNIS <- MolluscSummerIntensity[which(MolluscSummerIntensity$Invasive  =='NIS'),]
@@ -198,12 +198,12 @@ CI_MolluscNAT_Int <- CI_MolluscNAT_Int[order(CI_MolluscNAT_Int$c_intensity),]
 
 SummerIntensity_FishNAT <- Transect_Species_Abundance[which(Transect_Species_Abundance$Invasive  =='NAT'),]
 SummerIntensity_FishNAT <- merge(SummerIntensity_FishNAT, summer_c_int, 
-                                by.x = "eventYear", by.y = "year")
+                                by.x = "eventYear", by.y = "Year")
 SummerIntensity_FishNAT$eventYear <- as.numeric(as.character(SummerIntensity_FishNAT$eventYear))
 
 SummerIntensity_FishNIS <- Transect_Species_Abundance[which(Transect_Species_Abundance$Invasive  =='NIS'),]
 SummerIntensity_FishNIS <- merge(SummerIntensity_FishNIS, summer_c_int, 
-                                by.x = "eventYear", by.y = "year")
+                                by.x = "eventYear", by.y = "Year")
 SummerIntensity_FishNIS$eventYear <- as.numeric(as.character(SummerIntensity_FishNIS$eventYear))
 
 Cintensity_FishNat<- rma.mv(Ratio ~  c_intensity, random =  ~ 1 | Species,

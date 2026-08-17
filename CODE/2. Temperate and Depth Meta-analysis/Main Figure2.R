@@ -20,7 +20,7 @@ par(mar = c(5,5,3,2))
 ##%######################################################%##
 
 plot(PredictNIS_AbunSP$Temp, PredictNIS_AbunSP$Pred, type="o", col="indianred1", pch = NA, lty=1 , lwd=4,
-     xlim = c(28, 30), ylim = c(-6, 6),main="A. Species abundance across SST",cex.lab = 2,cex.main = 2,cex.axis = 1.8,
+     xlim = c(28, 30), ylim = c(-6, 6),main="A. Mollusc abundance across SST",cex.lab = 2,cex.main = 2,cex.axis = 1.8,
      ylab = "Autumn to spring ratio", xlab = "Max monthly SST (°C)")
 
 
@@ -49,7 +49,7 @@ legend("topright", legend = c("Non-indigenous", "Native"),
 ##%######################################################%##
 
 plot(PredictNIS_AbunDepth$Depth, PredictNIS_AbunDepth$Pred, type="o", col="indianred1",pch = NA, lty=1 , lwd=4,
-     cex.lab = 2,cex.main = 2,cex.axis = 1.8, ylim = c(-6, 6),main="B. Species abundance across depth",
+     cex.lab = 2,cex.main = 2,cex.axis = 1.8, ylim = c(-6, 6),main="B. Mollusc abundance across depth",
      ylab = NA, xlab = "Depth (m)")
 
 polygon(c(CI_NIS$Depth, rev(CI_NIS$Depth)), c(CI_NIS$ci.lb, rev(CI_NIS$ci.ub)),
