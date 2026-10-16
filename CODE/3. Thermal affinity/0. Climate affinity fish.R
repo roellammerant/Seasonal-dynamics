@@ -4,7 +4,7 @@
 #                                                          #
 ##%######################################################%##
 ## Note:
-## This file shows how to extract thermal affinity for fishes but doesnÂ´t run without extracting the occurrence data yourself
+## This file shows how to extract thermal affinity for fishes but doesn´t run without extracting the occurrence data yourself
 ### The GBIF occurence data can be found through the following DOI: https://doi.org/10.15468/dl.ynh4ya
 ### The example names for datafiles below need to be addjusted to your own names
 
